@@ -4,16 +4,20 @@
 This project is an invoice billing system developed in Java, focused on efficiently managing customers, items, and invoices using MySQL for data storage and management.
 
 **Features**
-Create and Manage Customers: Allows creation, updating, and viewing of customer records.
+Create and Manage Customers:  Allows creation, updating, and viewing of customer records.
+
 Create and Manage Items: Enables creation, updating, and viewing of item records.
+
 Generate and Manage Invoices: Facilitates the creation of invoices, adding items to invoices, updating quantities, and calculating totals.
+
 View Sales Reports: Provides functionality to view sales reports such as item sales and customer balances.
+
 Database Integration using JDBC: Uses JDBC for connecting to and interacting with a MySQL database for data storage.
 
 **Technologies Used**
-Java: Core programming language used for application logic.
-MySQL: Relational database management system used for data storage.
-JDBC (Java Database Connectivity): API for Java that allows interaction with various databases.
+Java
+MySQL
+JDBC (Java Database Connectivity)
 
 **Table Descriptions for Invoice Billing System**
 **Customers Table**
