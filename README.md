@@ -21,7 +21,9 @@ MySQL
 JDBC (Java Database Connectivity)
 
 **Table Descriptions for Invoice Billing System**
+
 **Customers Table**
+
 **Description:**
 Stores customer information such as name, mobile number, and balance.
 **Columns:**
@@ -31,6 +33,7 @@ mobile_number: Customer's contact number.
 balance: Amount owed by the customer.
 
 **Items Table**
+
 **Description:**
 Stores details about products or services available for invoicing.
 **Columns:**
@@ -40,6 +43,7 @@ unit: Unit of measurement or sale for the item.
 rate: Price per unit of the item.
 
 **Invoices Table**
+
 **Description:**
 Records details about each invoice issued to customers.
 **Columns:**
@@ -50,6 +54,7 @@ discount: Discount applied to the invoice total.
 total: Total amount payable after applying discounts.
 
 **Invoice Details Table**
+
 **Description:**
 Stores line-item details for each invoice, specifying included items and quantities.
 **Columns:**
