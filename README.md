@@ -4,6 +4,7 @@
 This project is an invoice billing system developed in Java, focused on efficiently managing customers, items, and invoices using MySQL for data storage and management.
 
 **Features**
+
 Create and Manage Customers:  Allows creation, updating, and viewing of customer records.
 
 Create and Manage Items: Enables creation, updating, and viewing of item records.
