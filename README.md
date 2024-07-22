@@ -1,24 +1,46 @@
 **Invoice Billing System**
 
 **Project Overview:**
-This project is an invoice billing system developed in Java, focused on efficiently managing customers, items, and invoices using MySQL for data storage and management. The system allows for creating, updating, and managing records while ensuring accurate billing, reporting, and ease of use.
+This project is an invoice billing system developed in Java, focused on efficiently managing customers, items, and invoices using MySQL for data storage and management. The system allows for creating, updating, and managing records while ensuring accurate billing, reporting, and ease of use. The system supports both console-based operations and a graphical user interface (GUI) for user interactions.
 
 **Features**
 
-Create and Manage Customers: Allows creation, updating, and viewing of customer records. Customer information is encapsulated, ensuring data integrity and security.
+**Create and Manage Customers:**
+Allows creation, updating, and viewing of customer records.
+Customer information is encapsulated, ensuring data integrity and security.
 
-Create and Manage Items: Enables creation, updating, and viewing of item records. Methods are provided for updating item details and deleting items if necessary.
+**Create and Manage Items:**
 
-Generate and Manage Invoices: Facilitates the creation of invoices, adding items to invoices, updating quantities, and calculating totals. Invoices can be corrected by updating or deleting items. The system ensures that customer balances are carried over and updated with each purchase.
+Enables creation, updating, and viewing of item records.
+Methods are provided for updating item details and deleting items if necessary.
 
-View Sales Reports: Provides functionality to view sales reports such as item sales and customer balances.
+**Generate and Manage Invoices:**
 
-Database Integration using JDBC: Uses JDBC for connecting to and interacting with a MySQL database for data storage..
+Facilitates the creation of invoices, adding items to invoices, updating quantities, and calculating totals.
+Invoices can be corrected by updating or deleting items.
+The system ensures that customer balances are carried over and updated with each purchase.
+
+**View Sales Reports:**
+
+Provides functionality to view sales reports such as item sales and customer balances.
+
+**Database Integration using JDBC:**
+
+Uses JDBC for connecting to and interacting with a MySQL database for data storage.
+
+**GUI-Specific Features**
+
+**Graphical User Interface (GUI):**
+
+Includes MainGUI, BillingGUI, CreateItemGUI, and ViewInvoiceByIdGUI classes to handle front-end operations.
+Facilitates user-friendly interaction for creating invoices, managing items, and viewing records.
+GUI operations are performed without modifying the backend code, ensuring consistency and reliability.
 
 **Technologies Used**
 Java
 MySQL
 JDBC (Java Database Connectivity)
+Swing (for GUI)
 
 **Table Descriptions for Invoice Billing System**
 
@@ -34,7 +56,7 @@ balance: Amount owed by the customer.
 
 **Items Table**
 
-**Description:**
+**Description:** 
 Stores details about products or services available for invoicing.
 **Columns:**
 item_id: Unique identifier for each item.
@@ -44,14 +66,18 @@ rate: Price per unit of the item.
 
 **Invoices Table**
 
-**Description:**
+**Description:** 
 Records details about each invoice issued to customers.
 **Columns:**
 invoice_id: Unique identifier for each invoice.
 customer_id: Reference to the customer associated with the invoice.
 date: Date when the invoice was created.
+subtotal: Subtotal amount before discount.
 discount: Discount applied to the invoice total.
 total: Total amount payable after applying discounts.
+paid: Amount paid by the customer.
+Foreign Key:
+customer_id references Customers(customer_id).
 
 **Invoice Details Table**
 
@@ -63,6 +89,9 @@ invoice_id: Reference to the invoice the line item belongs to.
 item_id: Reference to the item included in the line item.
 quantity: Quantity of the item in the invoice.
 price: Total price for the line item based on quantity and item rate.
+Foreign Key:
+invoice_id references Invoices(invoice_id).
+item_id references Items(item_id).
 
 **Relationships**
 Customers to Invoices: Each customer can have multiple invoices.
