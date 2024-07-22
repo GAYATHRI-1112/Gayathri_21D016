@@ -1,5 +1,9 @@
 **Invoice Billing System**
 
+**Developer:** Gayathri B , BE ECE
+
+**Institution:** Thiagarajar College of Engineering, Madurai
+
 **Project Overview:**
 This project is an invoice billing system developed in Java, focused on efficiently managing customers, items, and invoices using MySQL for data storage and management. The system allows for creating, updating, and managing records while ensuring accurate billing, reporting, and ease of use. The system supports both console-based operations and a graphical user interface (GUI) for user interactions.
 
