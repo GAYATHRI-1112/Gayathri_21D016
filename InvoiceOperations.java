@@ -3,7 +3,6 @@ package InvoiceBillingSystem;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Scanner;
-import java.time.LocalDate;
 
 public class InvoiceOperations {
     public static void createInvoice(Connection connection, Scanner scanner) {
@@ -30,7 +29,7 @@ public class InvoiceOperations {
             } else {
                 String name;
                 do {
-                    System.out.print("Customer not found. Enter Customer Name to create a new customer: ");
+                    System.out.print("Enter Customer Name: ");
                     name = scanner.next();
                     if (!Customer.isValidName(name)) {
                         System.out.println("Enter a valid name.");
@@ -42,10 +41,10 @@ public class InvoiceOperations {
                 customerId = customer.getCustomerId();
             }
 
-            LocalDate currentDate = LocalDate.now();
+            //LocalDate currentDate = LocalDate.now();
             System.out.print("Enter Discount: ");
             double discount = scanner.nextDouble();
-            Invoice invoice = new Invoice(customerId, 0, discount, 0);
+            Invoice invoice = new Invoice(customerId, 0, discount,0, 0);
             invoice.createInvoice(connection);
             int invoiceId = invoice.getInvoiceId();
             double subTotal = 0;
@@ -66,15 +65,13 @@ public class InvoiceOperations {
                         case 1:
                             System.out.print("Enter Quantity: ");
                             int quantity = scanner.nextInt();
-                            double price = item.getRate() * quantity;
-                            // subTotal += price;
+                            double price = item.getRate() * quantity;                          
                             invoice.createInvoiceDetail(connection, item, quantity, price);
                             break;
                         case 2:
                             System.out.print("Enter Quantity to Update: ");
                             int newQuantity = scanner.nextInt();
                             double newPrice = item.getRate() * newQuantity;
-                            // subTotal = subTotal - item.getRate() * newQuantity  + newPrice; // Adjust subtotal
                             Invoice.updateInvoiceDetail(connection, invoiceId, itemId, newQuantity, newPrice);
                             break;
                         case 3:
@@ -85,13 +82,15 @@ public class InvoiceOperations {
                     }
                 }
             }
-            double totalAmount = Invoice.updateInvoiceTotal(connection, invoiceId, discount);
-            invoice.setSubTotal(subTotal);
-            invoice.setTotal(totalAmount);
+            invoice.updateInvoiceTotal(connection, invoiceId, discount);
+            double totalAmount= invoice.getTotal();
+        	subTotal= invoice.getsubTotal();
             // Update the invoice total in the database
             System.out.println("Total Amount: " + totalAmount);
             System.out.print("Enter Amount Paid: ");
             double amountPaid = scanner.nextDouble();
+            invoice.setPaid(amountPaid);
+            invoice.updateInvoiceTotal(connection, invoiceId, discount);
             double balance = totalAmount - amountPaid + initialBalance;
             customer.updateBalance(connection, balance);
             connection.commit();
@@ -99,8 +98,6 @@ public class InvoiceOperations {
             System.out.println("Invoice created successfully.");
             System.out.println("Initial Balance: " + initialBalance);
             Invoice.viewInvoiceByID(connection, invoiceId);
-            System.out.println("Paid Amount: " + amountPaid);
-            System.out.println("Balance Due: " + balance);
 
         } catch (SQLException e) {
             try {

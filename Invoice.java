@@ -14,13 +14,15 @@ public class Invoice {
     private double subTotal;
     private double discount;
     private double total;
+    private double paid;
     private LocalDate currentDate;
 
-    public Invoice(int customerId, double subTotal, double discount, double total) {
+    public Invoice(int customerId, double subTotal, double discount, double total,double paid) {
         this.customerId = customerId;
         this.subTotal = subTotal;
         this.discount = discount;
         this.total = total;
+        this.paid=paid;
         this.currentDate = LocalDate.now();
     }
 
@@ -41,8 +43,15 @@ public class Invoice {
         return discount;
     }
 
+    public double getsubTotal() {
+        return subTotal;
+    }
+
     public double getTotal() {
         return total;
+    }
+    public double getPaid() {
+        return paid;
     }
     public void setSubTotal(double subTotal) {
         this.subTotal = subTotal;
@@ -50,6 +59,9 @@ public class Invoice {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+    public void setPaid(double paid) {
+        this.paid = paid;
     }
 
     // Create invoice method
@@ -106,26 +118,31 @@ public class Invoice {
         }
     }
  // Inside Invoice class
-    public static double updateInvoiceTotal(Connection connection, int invoiceId, double discount) throws SQLException {
-        String query = "UPDATE Invoices SET SubTotal=(SELECT SUM(Price) FROM InvoiceDetails WHERE InvoiceID = ?),Total = (SELECT SUM(Price) FROM InvoiceDetails WHERE InvoiceID = ?) - ? WHERE InvoiceID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-        	stmt.setInt(1, invoiceId);
-            stmt.setInt(2, invoiceId);
-            stmt.setDouble(3, discount);
-            stmt.setInt(4, invoiceId);
-            stmt.executeUpdate();
-
-            String totalQuery = "SELECT Total FROM Invoices WHERE InvoiceID = ?";
-            try (PreparedStatement totalStmt = connection.prepareStatement(totalQuery)) {
-                totalStmt.setInt(1, invoiceId);
-                ResultSet rs = totalStmt.executeQuery();
-                if (rs.next()) {
-                    return rs.getDouble("Total");
-                }
+    public void updateInvoiceTotal(Connection connection,int invoiceId, double discountPercentage) throws SQLException {
+        // Query to calculate the subtotal
+        String subtotalQuery = "SELECT SUM(Price) AS SubTotal FROM InvoiceDetails WHERE InvoiceID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(subtotalQuery)) {
+            stmt.setInt(1,invoiceId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                this.subTotal = rs.getDouble("SubTotal");
             }
         }
-        return 0;
+        double discountAmount = this.subTotal * (discountPercentage / 100.0);
+        this.total = this.subTotal - discountAmount;
+
+        // Update the invoice with the new subtotal and total
+        String updateQuery = "UPDATE Invoices SET SubTotal = ?, Discount = ?, Total = ? , Paid = ?WHERE InvoiceID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(updateQuery)) {
+            stmt.setDouble(1, this.subTotal);
+            stmt.setDouble(2, discountPercentage);
+            stmt.setDouble(3, this.total);
+            stmt.setDouble(4, this.paid);
+            stmt.setInt(5, this.invoiceId);
+            stmt.executeUpdate();
+        }
     }
+
     
 
 
@@ -140,9 +157,11 @@ public class Invoice {
                     rs.getInt("CustomerID"),
                     rs.getDouble("SubTotal"),
                     rs.getDouble("Discount"),
-                    rs.getDouble("Total")
+                    rs.getDouble("Total"),
+                    rs.getDouble("Paid")
                 );
                 invoice.invoiceId = rs.getInt("InvoiceID");
+                invoice.currentDate = rs.getDate("Date").toLocalDate(); // Getting the date
                 invoices.add(invoice);
             }
         }
@@ -151,17 +170,16 @@ public class Invoice {
         } else {
             System.out.println("List of Invoices:");
             for (Invoice invoice : invoices) {
-                System.out.printf("Invoice ID: %d, Customer ID: %d, Date: %s, Total: %.2f\n",
+                System.out.printf("Invoice ID: %d,  Customer ID: %d,  Date: %s,   Total: %.2f,   Paid: %.2f\n",
                         invoice.getInvoiceId(), invoice.getCustomerId(),
-                        invoice.getDate(), invoice.getTotal());
+                        invoice.getDate(), invoice.getTotal(), invoice.getPaid());
             }
         }
     }
-
     // View invoice by ID method
     public static void viewInvoiceByID(Connection connection, int invoiceId) {
         try {
-            String query = "SELECT i.InvoiceID, i.CustomerID, i.Date, i.SubTotal, i.Discount, i.Total, c.Name, c.Balance " +
+            String query = "SELECT i.InvoiceID, i.CustomerID, i.Date, i.SubTotal, i.Discount, i.Total,i.Paid, c.Name, c.Balance " +
                            "FROM Invoices i JOIN Customers c ON i.CustomerID = c.CustomerID WHERE i.InvoiceID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setInt(1, invoiceId);
@@ -174,9 +192,10 @@ public class Invoice {
                     double subTotal = rs.getDouble("SubTotal");
                     double discount = rs.getDouble("Discount");
                     double total = rs.getDouble("Total");
+                    double paidAmount = rs.getDouble("Paid");
                     double balance = rs.getDouble("Balance");
                     System.out.println("-----------------------------------------------------------------------------");
-                    System.out.println("\t\t RAMU STORE");
+                    System.out.println("\t\t RAM STORE");
 
                     System.out.printf("Invoice ID: %d\nCustomer ID: %d\nCustomer Name: %s\nDate: %s\n\n",
                             invoiceId, customerId, customerName, date);
@@ -189,7 +208,7 @@ public class Invoice {
                         detailStmt.setInt(1, invoiceId);
                         ResultSet detailRs = detailStmt.executeQuery();
                         System.out.printf("%-20s %-10s %-10s %-10s %-10s\n", "Item Name", "Quantity", "Unit", "Rate", "Price");
-                     System.out.print("-----------------------------------------------------------------------------");
+                     System.out.println("-----------------------------------------------------------------------------");
                         while (detailRs.next()) {
                             String itemName = detailRs.getString("ItemName");
                             int quantity = detailRs.getInt("Quantity");
@@ -200,12 +219,14 @@ public class Invoice {
                                     itemName, quantity, unit, rate, price);
                         }
                         // Print summary
-                        System.out.printf("\nSubTotal: %.2f\nDiscount: %.2f\nTotal: %.2f\nCustomer Balance: %.2f\n",
-                                subTotal, discount, total, balance);
+                        
+                        System.out.printf("\nSubTotal: %.2f\nDiscount: %.0f%%\nTotal: %.2f\nAmount Paid: %.2f\nCustomer Balance: %.2f\n",
+                                subTotal, discount, total,paidAmount, balance);
                     }
                 } else {
                     System.out.println("Invoice not found.");
                 }
+                System.out.println("Thank you for your purchase!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
